@@ -1,36 +1,46 @@
-> Please fill out this template when filing an issue.
-> All lines marked as quotes (`>`) instruct you with
-> what info we expect.
-> Remove this opening paragraph.
+> We LOVE to help with any issues or bug you have!
+
+> **Questions**: If you have questions about how to use Realm, please ask on [SO](http://stackoverflow.com/questions/ask?tags=realm) - we monitor the Realm tag.
+
+> **Feature Request**: Just fill in the first two sections below.
+
+> **Bugs**: To help you as fast as possible with an issue or bug please describe your issue and the steps you have taken to reproduce it in as many details as possible.
+>
+> Thanks for helping us help you :-)
+>
+> Please remove this and above before submitting.
 
 ## Goals
 
-> Replace this with what you tried to achieve.
+?
 
 ## Expected Results
 
-> Replace this with what you expected to happen.
+?
 
 ## Actual Results
 
-> Replace this with what actually happened.  
-> e.g. the stack trace of a crash
+?
 
 ## Steps to Reproduce
 
-> Provide steps we can follow to reproduce this issue.
+?
 
 ## Code Sample
 
-> Provide a code sample that highlights the issue.
+> Provide a code sample or test case that highlights the issue.
 > If relevant, include your model definitions.
-> For larger code samples, links to external gists or repositories are preferred.
-> Full Xcode projects that we can compile ourselves are ideal.
+> For larger code samples, links to external gists/repositories are preferred (Alternatively share confidentially at help@realm.io).
+> Full Xcode projects that we can compile ourselves are ideal!
 
 ## Version of Realm and Tooling
 
-> Share which versions of Realm are affected, the Xcode and OS X version
-> on which you compile, as well as the version of the
-> dependency manager involved (CocoaPods / Carthage).
-> [In the CONTRIBUTING guidelines](https://git.io/vgxJO), you will find
-> a script, which will help with that.
+Realm version: ?
+
+Xcode version: ?
+
+iOS/OSX version: ?
+
+Dependency manager + version: ?
+
+> [In the CONTRIBUTING guidelines](https://git.io/vgxJO), you will find a script, which will help with determine versions.
