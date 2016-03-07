@@ -1,0 +1,23 @@
+ - [ ] Functionality
+   - [X] Change information for List
+   - [X] Change information for unsorted Results
+   - [X] Change information for sorted Results
+   - [ ] Change information for Results derived from List
+ - [ ] Testing
+   - [ ] Write tests covering everything that can reasonably be tested
+   - [X] TSan on object store tests
+   - [ ] TSan on realm-cocoa tests
+   - [X] Fuzz-test unsorted query changesets
+   - [Xj Fuzz-test sorted query changesets
+   - [ ] Fuzz-test unsorted linkview changesets
+   - [ ] Fuzz-test sorted linkview changesets
+ - [ ] Performance
+   - [ ] Measure performance impact when changesets aren't used
+   - [ ] Measure performance of doing things with the changesets
+   - [ ] Make things fast enough
+ - [ ] Documentation
+   - [ ] Write API docs
+   - [ ] Update the guide
+   - [X] Update existing UITableView examples
+   - [ ] Add an NSOutlineView example
+
