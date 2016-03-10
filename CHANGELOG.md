@@ -14,6 +14,8 @@ x.x.x Release notes (yyyy-MM-dd)
 * Properly report changes made by adding an object to a Realm with
   addOrUpdate:/createOrUpdate: to KVO observers for existing objects with that
   primary key.
+* Mark further initializers in Objective-C as NS_DESIGNATED_INITIALIZER to prevent that these aren't
+  correctly defined in Swift Object subclasses, which don't qualify for auto-inheriting the required initializers.
 
 0.98.3 Release notes (2016-02-26)
 =============================================================
