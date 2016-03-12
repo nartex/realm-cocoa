@@ -286,21 +286,54 @@ struct RowInfo {
     size_t shifted_row_index;
     size_t prev_tv_index;
     size_t tv_index;
+    size_t shifted_tv_index;
 };
 
-void calculate_moves_unsorted(std::vector<RowInfo>& new_rows, CollectionChangeIndices& changeset)
+void calculate_moves_unsorted(std::vector<RowInfo>& new_rows, IndexSet const& removed, CollectionChangeIndices& changeset)
 {
+    class IncrementalCounter {
+    public:
+        IncrementalCounter(IndexSet const& set) : set(set), it(set.begin()), end(set.end()) { }
+
+        size_t operator()(size_t dest)
+        {
+            if (it == end)
+                return count;
+            for (; dest > index && it != end && it->first < dest; ++it) {
+                count += std::min(it->second, dest) - std::max(it->first, index);
+                index = it->second;
+            }
+            index = dest;
+            return count;
+        }
+
+        void reset()
+        {
+            index = 0;
+            count = 0;
+            it = set.begin();
+            end = set.end();
+        }
+
+    private:
+        size_t index = 0;
+        size_t count = 0;
+        IndexSet const& set;
+        IndexSet::const_iterator it, end;
+
+    } count_to(changeset.insertions);
+
     for (auto& row : new_rows) {
         // Calculate where this row would be with only previous insertions
         // and deletions. We can ignore future insertions/deletions from moves
         // because move_last_over() can only move rows to lower indices
-        size_t expected = row.prev_tv_index
-                        - changeset.deletions.count(0, row.prev_tv_index)
-                        + changeset.insertions.count(0, row.tv_index);
+        size_t expected = row.shifted_tv_index + count_to(row.tv_index) - removed.count(0, row.prev_tv_index);
         if (row.tv_index != expected) {
             changeset.moves.push_back({row.prev_tv_index, row.tv_index});
             changeset.insertions.add(row.tv_index);
             changeset.deletions.add(row.prev_tv_index);
+
+            count_to.reset();
         }
     }
 }
@@ -434,12 +467,15 @@ CollectionChangeBuilder CollectionChangeBuilder::calculate(std::vector<size_t> c
 {
     CollectionChangeBuilder ret;
 
+    size_t deleted = 0;
     std::vector<RowInfo> old_rows;
     for (size_t i = 0; i < prev_rows.size(); ++i) {
-        if (prev_rows[i] == npos)
+        if (prev_rows[i] == npos) {
+            ++deleted;
             ret.deletions.add(i);
+        }
         else
-            old_rows.push_back({prev_rows[i], npos, i});
+            old_rows.push_back({prev_rows[i], npos, i, i - deleted});
     }
     std::stable_sort(begin(old_rows), end(old_rows), [](auto& lft, auto& rgt) {
         return lft.shifted_row_index < rgt.shifted_row_index;
@@ -447,11 +483,13 @@ CollectionChangeBuilder CollectionChangeBuilder::calculate(std::vector<size_t> c
 
     std::vector<RowInfo> new_rows;
     for (size_t i = 0; i < next_rows.size(); ++i) {
-        new_rows.push_back({next_rows[i], npos, i});
+        new_rows.push_back({next_rows[i], npos, i, 0});
     }
     std::stable_sort(begin(new_rows), end(new_rows), [](auto& lft, auto& rgt) {
         return lft.shifted_row_index < rgt.shifted_row_index;
     });
+
+    IndexSet removed;
 
     size_t i = 0, j = 0;
     while (i < old_rows.size() && j < new_rows.size()) {
@@ -459,11 +497,12 @@ CollectionChangeBuilder CollectionChangeBuilder::calculate(std::vector<size_t> c
         auto new_index = new_rows[j];
         if (old_index.shifted_row_index == new_index.shifted_row_index) {
             new_rows[j].prev_tv_index = old_rows[i].tv_index;
+            new_rows[j].shifted_tv_index = old_rows[i].shifted_tv_index;
             ++i;
             ++j;
         }
         else if (old_index.shifted_row_index < new_index.shifted_row_index) {
-            ret.deletions.add(old_index.tv_index);
+            removed.add(old_index.tv_index);
             ++i;
         }
         else {
@@ -473,7 +512,7 @@ CollectionChangeBuilder CollectionChangeBuilder::calculate(std::vector<size_t> c
     }
 
     for (; i < old_rows.size(); ++i)
-        ret.deletions.add(old_rows[i].tv_index);
+        removed.add(old_rows[i].tv_index);
     for (; j < new_rows.size(); ++j)
         ret.insertions.add(new_rows[j].tv_index);
 
@@ -495,8 +534,9 @@ CollectionChangeBuilder CollectionChangeBuilder::calculate(std::vector<size_t> c
         calculate_moves_sorted(new_rows, ret);
     }
     else {
-        calculate_moves_unsorted(new_rows, ret);
+        calculate_moves_unsorted(new_rows, removed, ret);
     }
+    ret.deletions.add(removed);
     ret.verify();
 
 #ifdef REALM_DEBUG
